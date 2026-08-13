@@ -1,6 +1,4 @@
-def main():
-    print("Hello from credit-card-fraud-detection!")
-
+from pipelines.training_pipeline import training_pipeline
 
 if __name__ == "__main__":
-    main()
+    training_pipeline(data_path="data/creditcard.csv")
