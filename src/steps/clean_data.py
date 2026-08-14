@@ -5,22 +5,36 @@ from abc import ABC, abstractmethod
 
 
 class DataCleaningStrategy(ABC):
+    @staticmethod
     @abstractmethod
     def handle_data(df: pd.DataFrame) -> pd.DataFrame:
         pass
 
 class DataHandleTypes(DataCleaningStrategy):
-    def handle_data(df):
-        for column in df.columns:
-            if column == "Class":
-                df[column] = df[column].astype("int32")
-                continue
-
-            df[column] = df[column].astype("float64")
+    @staticmethod
+    def handle_data(df: pd.DataFrame) -> pd.DataFrame:
+        float_cols = [c for c in df.columns if c != "Class"]
+        
+        if "Class" in df.columns:
+            df["Class"] = df["Class"].astype("int32")
+            
+        if float_cols:
+            df[float_cols] = df[float_cols].astype("float64")
+            
         return df
+
+class DataHandleNullValues(DataCleaningStrategy):
+    @staticmethod
+    def handle_data(df: pd.DataFrame) -> pd.DataFrame:
+        return df.fillna(df.mean(numeric_only=True))
 
 
 @step
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
-    df = DataHandleTypes.handle_data(df)
+    data_cleaning_sub_steps = [
+        DataHandleTypes,
+        DataHandleNullValues,
+    ]
+    for sub_step in data_cleaning_sub_steps:
+        df = sub_step.handle_data(df)
     return df
