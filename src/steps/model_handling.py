@@ -1,12 +1,11 @@
 import logging
-from typing import Annotated
+from typing import Annotated, Tuple
 from sklearn.metrics import precision_score, recall_score, average_precision_score
 from zenml import step
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-
 
 class BasicCreditCardFraudModel(nn.Module):
     def __init__(self, input_size: int):
@@ -103,7 +102,12 @@ def evaluate_model(
     test_dataset: Dataset,
     model: nn.Module,
     batch_size: int = 32,
-) -> Annotated[float, "test_accuracy"]:
+) -> Tuple[
+    Annotated[float, "test_accuracy"],
+    Annotated[float, "test_precision"],
+    Annotated[float, "test_recall"],
+    Annotated[float, "test_area_under_precision_recall_curve"],
+    ]:
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     test_loss, test_acc, test_pre, test_rec, test_auprc = model.evaluate(test_loader)
     logging.info(f"Final Test Evaluation | Loss: {test_loss:.4f} | Accuracy: {test_acc*100:.2f}% | Precision: {test_pre:.2f} | Recall: {test_rec:.2f} | AUPRC: {test_auprc:.2f}")
