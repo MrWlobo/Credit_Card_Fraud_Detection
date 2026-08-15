@@ -27,7 +27,8 @@ def split_data(
     Annotated[Dataset, "train_dataset"],
     Annotated[Dataset, "val_dataset"],
     Annotated[Dataset, "test_dataset"],
-    Annotated[StandardScaler, "scaler"]
+    Annotated[StandardScaler, "scaler"],
+    Annotated[int, "feature_count"],
 ]:
     try:
         logging.info("Splitting the dataset into training, validation and testing sets")
@@ -35,6 +36,7 @@ def split_data(
         df_val, df_test = train_test_split(df_temp, test_size=0.5, stratify=df_temp["Class"], random_state=42)
 
         feature_columns = [col for col in df.columns if col != "Class"]
+        feature_count = len(feature_columns)
 
         logging.info("Scaling the features")
         scaler = StandardScaler()
@@ -52,7 +54,7 @@ def split_data(
         val_dataset = CreditCardFraudDataset(val_features, val_targets)
         test_dataset = CreditCardFraudDataset(test_features, test_targets)
 
-        return train_dataset, val_dataset, test_dataset, scaler
+        return train_dataset, val_dataset, test_dataset, scaler, feature_count
 
     except Exception as e:
         logging.error(f"Error while splitting the data: {e}")
