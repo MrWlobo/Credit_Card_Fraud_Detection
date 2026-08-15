@@ -13,10 +13,10 @@ class CreditCardFraudModel(nn.Module):
         super().__init__()
         self.loss_fn = nn.BCEWithLogitsLoss()
 
-    def forward(self, x):
+    def forward(self, x) -> torch.Tensor:
         raise NotImplementedError("Subclasses must implement forward method")
 
-    def train_epoch(self, dataloader, optimizer):
+    def train_epoch(self, dataloader, optimizer) -> Annotated[float, "average_loss"]:
         self.train()
         total_loss = 0.0
         for X, y in dataloader:
@@ -31,7 +31,12 @@ class CreditCardFraudModel(nn.Module):
 
         return total_loss / len(dataloader)
     
-    def evaluate(self, dataloader):
+    def evaluate(self, dataloader) -> Tuple[
+        Annotated[float, "test_accuracy"],
+        Annotated[float, "test_precision"],
+        Annotated[float, "test_recall"],
+        Annotated[float, "test_area_under_precision_recall_curve"],
+    ]:
         self.eval()
         num_batches = len(dataloader)
         test_loss, correct = 0.0, 0.0
@@ -65,7 +70,7 @@ class CreditCardFraudModel(nn.Module):
 class BasicCreditCardFraudModel(CreditCardFraudModel):
     def __init__(self, input_size: int):
         super().__init__()
-        self.linear_relu_stack = nn.Sequential(
+        self.model_stack = nn.Sequential(
             nn.Linear(input_size, 128),
             nn.ReLU(),
             nn.Dropout(0.2),
@@ -75,8 +80,8 @@ class BasicCreditCardFraudModel(CreditCardFraudModel):
             nn.Linear(64, 1),
         )
 
-    def forward(self, x):
-        return self.linear_relu_stack(x)
+    def forward(self, x) -> torch.Tensor:
+        return self.model_stack(x)
 
 @step
 def train_and_validate_model(
