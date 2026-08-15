@@ -30,7 +30,7 @@ class BasicCreditCardFraudModel(nn.Module):
         self.train()
         total_loss = 0.0
         for X, y in dataloader:
-            pred = self(X).squeeze(1)
+            pred = self(X).squeeze(-1)
             loss = self.loss_fn(pred, y)
 
             optimizer.zero_grad()
@@ -51,8 +51,12 @@ class BasicCreditCardFraudModel(nn.Module):
 
         with torch.no_grad():
             for X, y in dataloader:
-                pred = self(X).squeeze(1)
+                pred = self(X).squeeze(-1)
                 test_loss += self.loss_fn(pred, y).item()
+
+                probs = torch.sigmoid(pred)
+                all_probs.extend(probs.cpu().numpy())
+                all_targets.extend(y.cpu().numpy())
                 
                 predicted_labels = (pred > 0).float()
                 correct += (predicted_labels == y).sum().item()
