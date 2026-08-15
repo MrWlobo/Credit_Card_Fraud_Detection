@@ -115,13 +115,12 @@ def train_and_validate_model(
             f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Accuracy: {val_acc*100:.2f}% | Precision: {val_pre:.2f} | Recall: {val_rec:.2f} | AUPRC: {val_auprc:.2f}"
         )
 
-        mlflow.log_metric("train_loss", train_loss, step=epoch)
-        mlflow.log_metric("val_loss", val_loss, step=epoch)
-        mlflow.log_metric("val_accuracy", val_acc, step=epoch)
-        mlflow.log_metric("val_precision", val_pre, step=epoch)
-        mlflow.log_metric("val_recall", val_rec, step=epoch)
-        mlflow.log_metric("val_auprc", val_auprc, step=epoch)
-
+        mlflow.log_metric("train_loss", round(train_loss, ndigits=3), step=epoch)
+        mlflow.log_metric("val_loss", round(val_loss, ndigits=3), step=epoch)
+        mlflow.log_metric("val_accuracy", round(val_acc, ndigits=3), step=epoch)
+        mlflow.log_metric("val_precision", round(val_pre, ndigits=3), step=epoch)
+        mlflow.log_metric("val_recall", round(val_rec, ndigits=3), step=epoch)
+        mlflow.log_metric("val_auprc", round(val_auprc, ndigits=3), step=epoch)
     return model
 
 @step(experiment_tracker=experiment_tracker.name)
@@ -139,10 +138,10 @@ def evaluate_model(
     test_loss, test_acc, test_pre, test_rec, test_auprc = model.evaluate(test_loader)
     logging.info(f"Final Test Evaluation | Loss: {test_loss:.4f} | Accuracy: {test_acc*100:.2f}% | Precision: {test_pre:.2f} | Recall: {test_rec:.2f} | AUPRC: {test_auprc:.2f}")
     
-    mlflow.log_metric("test_loss", test_loss)
-    mlflow.log_metric("test_accuracy", test_acc)
-    mlflow.log_metric("test_precision", test_pre)
-    mlflow.log_metric("test_recall", test_rec)
-    mlflow.log_metric("test_auprc", test_auprc)
+    mlflow.log_metric("test_loss", round(test_loss, ndigits=3))
+    mlflow.log_metric("test_accuracy", round(test_acc, ndigits=3))
+    mlflow.log_metric("test_precision", round(test_pre, ndigits=3))
+    mlflow.log_metric("test_recall", round(test_rec, ndigits=3))
+    mlflow.log_metric("test_auprc", round(test_auprc, ndigits=3))
     
     return test_acc, test_pre, test_rec, test_auprc
