@@ -27,6 +27,7 @@ def split_data(
     Annotated[Dataset, "train_dataset"],
     Annotated[Dataset, "val_dataset"],
     Annotated[Dataset, "test_dataset"],
+    Annotated[StandardScaler, "scaler"]
 ]:
     try:
         logging.info("Splitting the dataset into training, validation and testing sets")
@@ -51,7 +52,7 @@ def split_data(
         val_dataset = CreditCardFraudDataset(val_features, val_targets)
         test_dataset = CreditCardFraudDataset(test_features, test_targets)
 
-        return train_dataset, val_dataset, test_dataset
+        return train_dataset, val_dataset, test_dataset, scaler
 
     except Exception as e:
         logging.error(f"Error while splitting the data: {e}")
