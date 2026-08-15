@@ -82,13 +82,14 @@ def train_and_validate_model(
             f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc*100:.2f}%"
         )
 
+    return model
+
 @step
 def evaluate_model(
     test_dataset: Dataset,
     model: nn.Module,
-    loss_fn: nn.Loss,
     batch_size: int = 64,
 ):
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-    test_loss, test_acc = model.evaluate(test_loader, loss_fn)
+    test_loss, test_acc = model.evaluate(test_loader)
     logging.info(f"Final Test Evaluation | Loss: {test_loss:.4f} | Accuracy: {test_acc*100:.2f}%")
