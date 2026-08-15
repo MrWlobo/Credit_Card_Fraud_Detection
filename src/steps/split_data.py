@@ -3,38 +3,40 @@ from typing import Annotated, Tuple
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from zenml import step
+import torch
+from torch.utils.data import Dataset
+
+
+class CreditCardFraudDataset(Dataset):
+    def __init__(self, df):
+        self.features = torch.tensor(df.drop(columns=["Class"]).values, dtype=torch.float32)
+        self.targets = torch.tensor(df["Class"].values, dtype=torch.float32)
+
+    def __len__(self):
+        return len(self.features)
+
+    def __getitem__(self, idx):
+        return self.features[idx], self.targets[idx]
 
 
 @step
 def split_data(
     df: pd.DataFrame,
 ) -> Tuple[
-    Annotated[pd.DataFrame, "X_train"],
-    Annotated[pd.DataFrame, "X_val"],
-    Annotated[pd.DataFrame, "X_test"],
-    Annotated[pd.Series, "y_train"],
-    Annotated[pd.Series, "y_val"],
-    Annotated[pd.Series, "y_test"],
+    Annotated[Dataset, "train_dataset"],
+    Annotated[Dataset, "val_dataset"],
+    Annotated[Dataset, "test_dataset"],
 ]:
     try:
-        X = df.drop(columns=["Class"])
-        y = df["Class"]
+        logging.info("Splitting the dataset into training, validation and testing sets")
+        df_train, df_temp = train_test_split(df, test_size=0.4, stratify=df["Class"], random_state=42)
+        df_val, df_test = train_test_split(df_temp, test_size=0.5, stratify=df_temp["Class"], random_state=42)
 
-        logging.info("Splitting the dataset into training and testing sets")
-        X_train_val, X_test, y_train_val, y_test = train_test_split(
-            X, y, test_size=0.15, random_state=42, stratify=y
-        )
+        train_dataset = CreditCardFraudDataset(df_train)
+        val_dataset = CreditCardFraudDataset(df_val)
+        test_dataset = CreditCardFraudDataset(df_test)
 
-        logging.info("Getting the validation set from training set")
-        X_train, X_val, y_train, y_val = train_test_split(
-            X_train_val,
-            y_train_val,
-            test_size=0.1765,
-            random_state=42,
-            stratify=y_train_val,
-        )
-
-        return X_train, X_val, X_test, y_train, y_val, y_test
+        return train_dataset, val_dataset, test_dataset
 
     except Exception as e:
         logging.error(f"Error while splitting the data: {e}")
